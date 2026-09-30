@@ -21,7 +21,8 @@ VOLUME_FILE = RESULTS_DIR / "table3_volume.csv"
 INFRA_FILE = RESULTS_DIR / "table4_infra_composition.csv"
 SUMMARY_FILE = RESULTS_DIR / "summary_stats.json"
 FIGURES_DIR = RESULTS_DIR / "figures"
-TP_FIG_DIR = PROJECT / "artifacts" / "figures" / "trafficpulse"
+TP_FIG_DIR = PROJECT / "artifacts" / "figures" / "trafficpulse" / "true_state"
+TP_MANIFEST = TP_FIG_DIR / "manifest.json"
 
 
 # ============================================================
@@ -103,6 +104,7 @@ try:
     volume = load_csv(VOLUME_FILE)
     infra = load_csv(INFRA_FILE)
     summary = load_json(SUMMARY_FILE)
+    tp_manifest = load_json(TP_MANIFEST)
 except FileNotFoundError as exc:
     st.error(
         f"Required TrafficPulse result artifact is missing:\n\n{exc}"
@@ -194,14 +196,26 @@ if page == "Guided demo":
         st.session_state.demo_step = go
         st.rerun()
 
-    def tp_fig(name: str, caption: str = ""):
-        p = TP_FIG_DIR / name
+    def tp_fig(key: str):
+        """True SUMO state image with its traceable caption from the manifest."""
+        info = tp_manifest["images"][key]
+        p = TP_FIG_DIR / info["file"]
         if p.exists():
             st.image(
                 load_figure_bytes(p),
-                caption=caption or None,
+                caption=(
+                    f"{info['label']} · t = {info['timestep_s']:.0f} s · "
+                    f"{info['on_network_count']} vehicles on network · "
+                    f"{info['halting_queue_at_t']} halting"
+                ),
                 width="stretch",
             )
+
+    TP_METHOD = (
+        "Each dot marks one simulated vehicle at its simulated position "
+        "at the stated timestep (seed 42), colored by the simulation's own "
+        "vehicle-type colors. Marker size is fixed, not to scale."
+    )
 
     # ---- 0 Problem ----
     if step == 0:
@@ -226,10 +240,8 @@ infrastructure scenarios.
         c1.metric("SUMO runs", "72")
         c2.metric("XGBoost test R²", fmt_num(summary.get("xgboost_test_r2"), 4))
         c3.metric("Forecast mean error", pct(summary.get("mean_source_pct_error"), 2))
-        tp_fig(
-            "trafficpulse_intersection_hero.png",
-            "Four-arm signalized intersection, top-down.",
-        )
+        tp_fig("demand_base")
+        st.caption(TP_METHOD)
 
     # ---- 1 Data ----
     elif step == 1:
@@ -237,9 +249,9 @@ infrastructure scenarios.
         st.markdown(
             """
 - 15-minute temporal resolution, E/N/S/W heading labels
+- 294 sites in the cleaned 15-minute dataset
 - 15 original vehicle classes grouped into 5 simulation categories:
   motorcycle, short, short-towing, rigid truck/bus, heavy articulated
-- Hundreds of monitored sites; cleaned subset feeds the pipeline
 """
         )
         row0 = forecast.iloc[0] if not forecast.empty else None
@@ -296,15 +308,17 @@ Network: 4 arms, signalized, 1 lane/approach, 50 km/h, 66 s cycle
 (30 s green + 3 s yellow), SUMO 1.27.1, fixed seed 42.
 """
         )
-        tp_fig("01_prototype_sparse.png", "Baseline layout, sparse demand")
-        tp_fig("02_forecast_to_sumo.png", "Demand inflow to the network")
+        tp_fig("prototype_sparse")
+        tp_fig("inflow")
+        st.caption(TP_METHOD)
 
     # ---- 5 Demand ----
     elif step == 5:
         st.subheader("6 · Demand experiment — 8 × 5 = 40 runs")
         st.markdown(
             "Only total demand changes (80 % / predicted / fixed-1050 / "
-            "120 % / 140 %). Network, signal, shares, composition, seed frozen."
+            "120 % / 140 %). Network, signal, shares, composition, seed frozen. "
+            "Effect frames show the drain phase at t = 1500 s for all four levels."
         )
         c1, c2 = st.columns(2)
         c1.metric("Demand → queue r",
@@ -313,14 +327,14 @@ Network: 4 arms, signalized, 1 lane/approach, 50 km/h, 66 s cycle
                   f"{summary.get('volume_demand_travel_pearson_r', 0):.3f}")
         i1, i2 = st.columns(2)
         with i1:
-            tp_fig("03_demand_low.png", "Low")
+            tp_fig("demand_low")
         with i2:
-            tp_fig("03_demand_base.png", "Base")
+            tp_fig("demand_base")
         i3, i4 = st.columns(2)
         with i3:
-            tp_fig("03_demand_high.png", "High")
+            tp_fig("demand_high")
         with i4:
-            tp_fig("03_demand_peak.png", "Peak")
+            tp_fig("demand_peak")
         st.dataframe(
             volume.sort_values(["time", "demand_veh_15min"])[
                 ["time", "scenario", "demand_veh_15min",
@@ -335,7 +349,9 @@ Network: 4 arms, signalized, 1 lane/approach, 50 km/h, 66 s cycle
         st.subheader("7 · Composition experiment — 8 × 2 = 16 runs")
         st.markdown(
             "Demand, network, signal fixed. Normal audited TIRTL mix vs "
-            "heavy mix — same total vehicles, cyan dots turn amber."
+            "heavy mix at equal total demand. Amber marks the "
+            "heavy-articulated class only (8 of 96 vehicles here); rigid "
+            "trucks render cyan per the simulation's own type colors."
         )
         h = summary.get("heavy_composition_effect_mean", {})
         c1, c2, c3 = st.columns(3)
@@ -344,9 +360,9 @@ Network: 4 arms, signalized, 1 lane/approach, 50 km/h, 66 s cycle
         c3.metric("Queue effect", f"+{h.get('mean_queue_veh', 0):.1f} veh")
         i1, i2 = st.columns(2)
         with i1:
-            tp_fig("04a_composition_all_cars.png", "All cars (reference)")
+            tp_fig("composition_normal")
         with i2:
-            tp_fig("04b_composition_heavy_mix.png", "Heavy mix, same total")
+            tp_fig("composition_heavy")
         st.warning("Note: the 20:00 period is an outlier in the composition results.")
 
     # ---- 7 Capacity ----
@@ -368,14 +384,14 @@ Network: 4 arms, signalized, 1 lane/approach, 50 km/h, 66 s cycle
         )
         i1, i2 = st.columns(2)
         with i1:
-            tp_fig("05a_capacity_one_lane.png", "One lane / approach")
+            tp_fig("capacity_1lane")
         with i2:
-            tp_fig("05b_capacity_two_lanes.png", "Two lanes / approach")
+            tp_fig("capacity_2lane")
 
     # ---- 8 Conclusion ----
     elif step == 8:
         st.subheader("9 · Conclusion — back to the same intersection")
-        tp_fig("06_conclusion_clean.png", "Baseline layout")
+        tp_fig("conclusion")
         st.markdown(
             """
 **Scope:** hypothetical intersection; TIRTL streams are independent

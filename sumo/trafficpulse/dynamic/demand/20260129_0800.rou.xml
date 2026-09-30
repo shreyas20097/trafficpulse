@@ -9,6 +9,7 @@
         minGap="2.5"
         maxSpeed="13.89"
         guiShape="passenger"
+        color="8,185,242"
     />
 
     <vType
@@ -20,6 +21,7 @@
         minGap="3.0"
         maxSpeed="13.89"
         guiShape="passenger"
+        color="0,224,255"
     />
 
     <vType
@@ -31,6 +33,7 @@
         minGap="3.0"
         maxSpeed="13.89"
         guiShape="truck"
+        color="8,185,242"
     />
 
     <vType
@@ -42,6 +45,7 @@
         minGap="4.0"
         maxSpeed="13.89"
         guiShape="truck"
+        color="243,154,61"
     />
 
     <vType
@@ -53,6 +57,7 @@
         minGap="1.5"
         maxSpeed="13.89"
         guiShape="motorcycle"
+        color="0,224,255"
     />
 
     <route

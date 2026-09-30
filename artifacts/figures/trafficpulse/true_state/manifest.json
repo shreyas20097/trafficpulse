@@ -1,0 +1,238 @@
+{
+ "method": "Each dot marks one real SUMO vehicle at its simulated (x, y) at the stated timestep (seed 42). Colors are the simulation's own vType colors. Counts and halting numbers are read from the simulation and printed on each image. Marker size is fixed (not to scale); road width is exaggerated for visibility.",
+ "images": {
+  "prototype_sparse": {
+   "file": "true_prototype_sparse.png",
+   "label": "17:15 low demand (802 veh/15 min)",
+   "sumocfg": "sumo/trafficpulse/volume/vol_20260117_1715_low.sumocfg",
+   "demand_veh_15min": 802,
+   "timestep_s": 60.0,
+   "on_network_count": 71,
+   "halting_queue_at_t": 28,
+   "type_counts": {
+    "short": 46,
+    "rigid": 10,
+    "towing": 4,
+    "heavy": 8,
+    "motorcycle": 3
+   },
+   "vtype_colors": {
+    "short": "#08B9F2",
+    "towing": "#00E0FF",
+    "rigid": "#08B9F2",
+    "heavy": "#F39A3D",
+    "motorcycle": "#00E0FF"
+   }
+  },
+  "inflow": {
+   "file": "true_inflow.png",
+   "label": "17:15 predicted demand (1002 veh/15 min)",
+   "sumocfg": "sumo/trafficpulse/volume/vol_20260117_1715_predicted.sumocfg",
+   "demand_veh_15min": 1002,
+   "timestep_s": 90.0,
+   "on_network_count": 102,
+   "halting_queue_at_t": 46,
+   "type_counts": {
+    "short": 83,
+    "rigid": 10,
+    "towing": 2,
+    "heavy": 5,
+    "motorcycle": 2
+   },
+   "vtype_colors": {
+    "short": "#08B9F2",
+    "towing": "#00E0FF",
+    "rigid": "#08B9F2",
+    "heavy": "#F39A3D",
+    "motorcycle": "#00E0FF"
+   }
+  },
+  "demand_low": {
+   "file": "true_demand_low.png",
+   "label": "17:15 low demand (802 veh/15 min)",
+   "sumocfg": "sumo/trafficpulse/volume/vol_20260117_1715_low.sumocfg",
+   "demand_veh_15min": 802,
+   "timestep_s": 1500.0,
+   "on_network_count": 58,
+   "halting_queue_at_t": 23,
+   "type_counts": {
+    "short": 56,
+    "rigid": 2
+   },
+   "vtype_colors": {
+    "short": "#08B9F2",
+    "towing": "#00E0FF",
+    "rigid": "#08B9F2",
+    "heavy": "#F39A3D",
+    "motorcycle": "#00E0FF"
+   }
+  },
+  "demand_base": {
+   "file": "true_demand_base.png",
+   "label": "17:15 predicted demand (1002 veh/15 min)",
+   "sumocfg": "sumo/trafficpulse/volume/vol_20260117_1715_predicted.sumocfg",
+   "demand_veh_15min": 1002,
+   "timestep_s": 1500.0,
+   "on_network_count": 85,
+   "halting_queue_at_t": 42,
+   "type_counts": {
+    "short": 76,
+    "rigid": 8,
+    "heavy": 1
+   },
+   "vtype_colors": {
+    "short": "#08B9F2",
+    "towing": "#00E0FF",
+    "rigid": "#08B9F2",
+    "heavy": "#F39A3D",
+    "motorcycle": "#00E0FF"
+   }
+  },
+  "demand_high": {
+   "file": "true_demand_high.png",
+   "label": "17:15 high demand (1202 veh/15 min)",
+   "sumocfg": "sumo/trafficpulse/volume/vol_20260117_1715_high.sumocfg",
+   "demand_veh_15min": 1202,
+   "timestep_s": 1500.0,
+   "on_network_count": 116,
+   "halting_queue_at_t": 61,
+   "type_counts": {
+    "short": 104,
+    "rigid": 10,
+    "towing": 2
+   },
+   "vtype_colors": {
+    "short": "#08B9F2",
+    "towing": "#00E0FF",
+    "rigid": "#08B9F2",
+    "heavy": "#F39A3D",
+    "motorcycle": "#00E0FF"
+   }
+  },
+  "demand_peak": {
+   "file": "true_demand_peak.png",
+   "label": "17:15 very-high demand (1403 veh/15 min)",
+   "sumocfg": "sumo/trafficpulse/volume/vol_20260117_1715_very_high.sumocfg",
+   "demand_veh_15min": 1403,
+   "timestep_s": 1500.0,
+   "on_network_count": 121,
+   "halting_queue_at_t": 62,
+   "type_counts": {
+    "short": 112,
+    "rigid": 8,
+    "heavy": 1
+   },
+   "vtype_colors": {
+    "short": "#08B9F2",
+    "towing": "#00E0FF",
+    "rigid": "#08B9F2",
+    "heavy": "#F39A3D",
+    "motorcycle": "#00E0FF"
+   }
+  },
+  "composition_normal": {
+   "file": "true_composition_normal.png",
+   "label": "17:15 normal TIRTL mix (1002 veh/15 min)",
+   "sumocfg": "sumo/trafficpulse/composition/comp_20260117_1715_normal.sumocfg",
+   "demand_veh_15min": 1002,
+   "timestep_s": 1500.0,
+   "on_network_count": 85,
+   "halting_queue_at_t": 42,
+   "type_counts": {
+    "short": 76,
+    "rigid": 8,
+    "heavy": 1
+   },
+   "vtype_colors": {
+    "short": "#08B9F2",
+    "towing": "#00E0FF",
+    "rigid": "#08B9F2",
+    "heavy": "#F39A3D",
+    "motorcycle": "#00E0FF"
+   }
+  },
+  "composition_heavy": {
+   "file": "true_composition_heavy.png",
+   "label": "17:15 heavy mix (1002 veh/15 min)",
+   "sumocfg": "sumo/trafficpulse/composition/comp_20260117_1715_heavy.sumocfg",
+   "demand_veh_15min": 1002,
+   "timestep_s": 1500.0,
+   "on_network_count": 96,
+   "halting_queue_at_t": 55,
+   "type_counts": {
+    "short": 72,
+    "heavy": 8,
+    "rigid": 15,
+    "towing": 1
+   },
+   "vtype_colors": {
+    "short": "#08B9F2",
+    "towing": "#00E0FF",
+    "rigid": "#08B9F2",
+    "heavy": "#F39A3D",
+    "motorcycle": "#00E0FF"
+   }
+  },
+  "capacity_1lane": {
+   "file": "true_capacity_1lane.png",
+   "label": "17:15 predicted demand, 1 lane/approach (1002 veh/15 min)",
+   "sumocfg": "sumo/trafficpulse/capacity/cap_20260117_1715_1lane.sumocfg",
+   "demand_veh_15min": 1002,
+   "timestep_s": 1500.0,
+   "on_network_count": 85,
+   "halting_queue_at_t": 42,
+   "type_counts": {
+    "short": 76,
+    "rigid": 8,
+    "heavy": 1
+   },
+   "vtype_colors": {
+    "short": "#08B9F2",
+    "towing": "#00E0FF",
+    "rigid": "#08B9F2",
+    "heavy": "#F39A3D",
+    "motorcycle": "#00E0FF"
+   }
+  },
+  "capacity_2lane": {
+   "file": "true_capacity_2lane.png",
+   "label": "17:15 predicted demand, 2 lanes/approach (1002 veh/15 min)",
+   "sumocfg": "sumo/trafficpulse/capacity/cap_20260117_1715_2lane.sumocfg",
+   "demand_veh_15min": 1002,
+   "timestep_s": 1500.0,
+   "on_network_count": 0,
+   "halting_queue_at_t": 0,
+   "type_counts": {},
+   "vtype_colors": {
+    "short": "#08B9F2",
+    "towing": "#00E0FF",
+    "rigid": "#08B9F2",
+    "heavy": "#F39A3D",
+    "motorcycle": "#00E0FF"
+   }
+  },
+  "conclusion": {
+   "file": "true_conclusion.png",
+   "label": "17:15 predicted demand (1002 veh/15 min)",
+   "sumocfg": "sumo/trafficpulse/volume/vol_20260117_1715_predicted.sumocfg",
+   "demand_veh_15min": 1002,
+   "timestep_s": 150.0,
+   "on_network_count": 109,
+   "halting_queue_at_t": 53,
+   "type_counts": {
+    "short": 97,
+    "rigid": 7,
+    "heavy": 3,
+    "towing": 1,
+    "motorcycle": 1
+   },
+   "vtype_colors": {
+    "short": "#08B9F2",
+    "towing": "#00E0FF",
+    "rigid": "#08B9F2",
+    "heavy": "#F39A3D",
+    "motorcycle": "#00E0FF"
+   }
+  }
+ }
+}
