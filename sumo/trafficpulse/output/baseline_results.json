@@ -1,0 +1,13 @@
+{
+  "scenario": "baseline",
+  "simulation_end_s": 3600.0,
+  "vehicles_reported": 1050,
+  "vehicles_arrived": 1050,
+  "vehicles_unfinished": 0,
+  "completion_rate_pct": 100.0,
+  "mean_travel_time_s": 194.56952380952382,
+  "mean_waiting_time_s": 93.12761904761905,
+  "mean_time_loss_s": 156.6483619047619,
+  "mean_queue_vehicles": 26.96638888888889,
+  "max_queue_vehicles": 75
+}

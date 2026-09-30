@@ -1,0 +1,73 @@
+{
+  "timestamp": "2026-01-17 14:30:00",
+  "model": "XGBoost",
+  "reference_total": 1050,
+  "predicted_total_before_calibration": 5038.759094238281,
+  "simulated_total": 985,
+  "direction_integer": {
+    "N": 203,
+    "S": 200,
+    "E": 289,
+    "W": 293
+  },
+  "direction_calibrated": {
+    "N": 203,
+    "S": 200,
+    "E": 289,
+    "W": 293
+  },
+  "source_streams": {
+    "N": {
+      "site": 133,
+      "heading": "N",
+      "current_observed_total": 919.0,
+      "model_prediction": 902.7825317382812,
+      "target_next_15min_actual_available_in_data": 935.0
+    },
+    "S": {
+      "site": 126,
+      "heading": "S",
+      "current_observed_total": 947.0,
+      "model_prediction": 946.528076171875,
+      "target_next_15min_actual_available_in_data": 809.0
+    },
+    "E": {
+      "site": 147,
+      "heading": "E",
+      "current_observed_total": 1777.0,
+      "model_prediction": 1702.567626953125,
+      "target_next_15min_actual_available_in_data": 1805.0
+    },
+    "W": {
+      "site": 195,
+      "heading": "W",
+      "current_observed_total": 1483.0,
+      "model_prediction": 1486.880859375,
+      "target_next_15min_actual_available_in_data": 1534.0
+    }
+  },
+  "vehicle_composition": {
+    "short": 0.8376493409158342,
+    "towing": 0.015421781717528203,
+    "rigid": 0.11106748615460652,
+    "heavy": 0.031503500399158606,
+    "motorcycle": 0.004357890812872501
+  },
+  "turn_share": {
+    "left": 0.2,
+    "straight": 0.7,
+    "right": 0.1
+  },
+  "metrics": {
+    "vehicles_reported": 985,
+    "vehicles_arrived": 985,
+    "vehicles_unfinished": 0,
+    "completion_rate_pct": 100.0,
+    "mean_travel_time_s": 200.91269035532994,
+    "mean_waiting_time_s": 101.31675126903554,
+    "mean_time_loss_s": 163.00910659898477
+  },
+  "route_file": "/home/omarchy/Projects/de/sumo/trafficpulse/dynamic/demand/eval_20260117_1430.rou.xml",
+  "config_file": "/home/omarchy/Projects/de/sumo/trafficpulse/dynamic/eval_20260117_1430.sumocfg",
+  "tripinfo_file": "/home/omarchy/Projects/de/sumo/trafficpulse/dynamic/output/eval_20260117_1430.tripinfo.xml"
+}

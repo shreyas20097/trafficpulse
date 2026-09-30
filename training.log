@@ -1,0 +1,134 @@
+nohup: ignoring input
+================================================================================
+TIRTL OVERNIGHT TRAINING
+================================================================================
+
+Loading feature dataset...
+Rows loaded: 842,072
+Columns:     36
+Date range:  2026-01-01 02:00:00 → 2026-01-31 23:30:00
+
+================================================================================
+CHRONOLOGICAL SPLIT
+================================================================================
+TRAIN: 650,830 rows | 2026-01-01 02:00:00 → 2026-01-24 23:45:00
+VAL:   82,014 rows | 2026-01-25 00:00:00 → 2026-01-27 23:45:00
+TEST:  109,228 rows | 2026-01-28 00:00:00 → 2026-01-31 23:30:00
+
+Preparing features...
+Model features: 327
+Training rows:  650,830
+Validation:     82,014
+Test:           109,228
+
+================================================================================
+BASELINE
+================================================================================
+Persistence VAL        MAE=   43.3412 RMSE=   65.7424 R2=    0.9777
+Persistence TEST       MAE=   53.3426 RMSE=   83.0825 R2=    0.9729
+
+================================================================================
+RANDOM FOREST
+================================================================================
+Training Random Forest...
+Random Forest VAL      MAE=   35.6050 RMSE=   55.1242 R2=    0.9843
+Random Forest TEST     MAE=   42.6483 RMSE=   66.8922 R2=    0.9824
+Training time: 1.57 minutes
+
+================================================================================
+XGBOOST
+================================================================================
+Training XGBoost...
+XGBoost VAL            MAE=   33.6782 RMSE=   52.8549 R2=    0.9856
+XGBoost TEST           MAE=   38.9112 RMSE=   61.6067 R2=    0.9851
+Training time: 0.26 minutes
+
+================================================================================
+FINAL COMPARISON
+================================================================================
+        model      split       MAE      RMSE       R2
+  Persistence validation 43.341248 65.742425 0.977665
+Random Forest validation 35.604988 55.124210 0.984297
+      XGBoost validation 33.678238 52.854902 0.985564
+  Persistence       test 53.342625 83.082534 0.972895
+Random Forest       test 42.648294 66.892231 0.982430
+      XGBoost       test 38.911213 61.606724 0.985097
+
+================================================================================
+IMPROVEMENT OVER PERSISTENCE
+================================================================================
+Random Forest   validation   MAE:    17.85% RMSE:    16.15%
+Random Forest   test         MAE:    20.05% RMSE:    19.49%
+XGBoost         validation   MAE:    22.30% RMSE:    19.60%
+XGBoost         test         MAE:    27.05% RMSE:    25.85%
+
+================================================================================
+FEATURE IMPORTANCE
+================================================================================
+
+Top Random Forest features:
+                   feature  importance
+                 total_all    0.120474
+           total_motorized    0.115200
+             short_vehicle    0.109932
+                     lag_1    0.109168
+                     lag_2    0.072239
+           rigid_truck_bus    0.065029
+            rolling_mean_4    0.063704
+            rolling_mean_8    0.053527
+                     lag_4    0.050828
+                     lag_8    0.038666
+      short_vehicle_towing    0.033847
+                  time_cos    0.029225
+                motorcycle    0.019957
+         heavy_articulated    0.019467
+                      hour    0.018384
+short_vehicle_towing_share    0.015757
+          motorcycle_share    0.014061
+             rolling_std_4    0.011681
+             rolling_std_8    0.010270
+   heavy_articulated_share    0.006050
+
+Top XGBoost features:
+        feature  importance
+      total_all    0.514637
+total_motorized    0.375154
+  short_vehicle    0.057773
+          lag_1    0.010865
+           hour    0.001365
+rigid_truck_bus    0.001313
+        site_27    0.001168
+       time_cos    0.001088
+         minute    0.001016
+          lag_4    0.000959
+       time_sin    0.000883
+          lag_8    0.000844
+     is_weekend    0.000738
+       site_230    0.000616
+      heading_W    0.000550
+ rolling_mean_8    0.000547
+      heading_E    0.000542
+          lag_2    0.000535
+      heading_S    0.000487
+        site_61    0.000381
+
+Calculating per-site/heading performance...
+
+================================================================================
+TRAINING COMPLETE
+================================================================================
+Total runtime: 1.95 minutes
+
+Results saved in:
+  artifacts/tirtl_training
+
+Main files:
+  model_comparison.csv
+  training_summary.json
+  test_predictions.csv
+  site_heading_performance.csv
+  daily_performance.csv
+  random_forest_feature_importance.csv
+  xgboost_feature_importance.csv
+  random_forest.joblib
+  xgboost.joblib

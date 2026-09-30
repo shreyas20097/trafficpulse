@@ -1,0 +1,9 @@
+<routes>
+    <!-- TrafficPulse brand vehicle colours (SUMO-native RGB).
+         cars: cyan/blue dots  |  heavy: amber dots. Exaggerate size for projector. -->
+    <vType id="short"      color="8,185,242"   guiShape="passenger"/>
+    <vType id="towing"     color="0,224,255"   guiShape="passenger"/>
+    <vType id="rigid"      color="8,185,242"   guiShape="truck"/>
+    <vType id="heavy"      color="243,154,61"  guiShape="truck"/>
+    <vType id="motorcycle" color="0,224,255"   guiShape="motorcycle"/>
+</routes>

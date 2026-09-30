@@ -1,0 +1,22 @@
+{
+  "Random Forest": {
+    "validation": {
+      "MAE_improvement_pct": 17.84964567662405,
+      "RMSE_improvement_pct": 16.151236300912704
+    },
+    "test": {
+      "MAE_improvement_pct": 20.04837758497268,
+      "RMSE_improvement_pct": 19.48701217942474
+    }
+  },
+  "XGBoost": {
+    "validation": {
+      "MAE_improvement_pct": 22.295181121611936,
+      "RMSE_improvement_pct": 19.603054110416355
+    },
+    "test": {
+      "MAE_improvement_pct": 27.054183842627094,
+      "RMSE_improvement_pct": 25.848766721543022
+    }
+  }
+}

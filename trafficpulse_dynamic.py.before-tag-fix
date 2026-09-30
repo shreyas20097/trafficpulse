@@ -1,0 +1,1035 @@
+from __future__ import annotations
+
+import argparse
+import json
+import math
+import os
+import subprocess
+import sys
+import xml.etree.ElementTree as ET
+from pathlib import Path
+
+import joblib
+import numpy as np
+import pandas as pd
+
+
+# ============================================================
+# PROJECT PATHS
+# ============================================================
+
+PROJECT = Path.cwd()
+
+FEATURE_FILE = PROJECT / "artifacts/tirtl_features.csv"
+MODEL_FILE = (
+    PROJECT
+    / "artifacts/tirtl_training/xgboost.joblib"
+)
+COMPOSITION_FILE = (
+    PROJECT
+    / "artifacts/tirtl_vehicle_composition_by_hour.csv"
+)
+
+PROFILE_FILE = (
+    PROJECT
+    / "artifacts/tirtl_representative_15min_profile.csv"
+)
+
+SUMO_BIN = (
+    PROJECT
+    / ".sumo-venv/bin/sumo"
+)
+
+SUMO_GUI_BIN = (
+    PROJECT
+    / ".sumo-venv/bin/sumo-gui"
+)
+
+BASE = PROJECT / "sumo/trafficpulse/dynamic"
+
+NETWORK = (
+    PROJECT
+    / "sumo/trafficpulse/network/intersection.net.xml"
+)
+
+DEMAND_DIR = BASE / "demand"
+OUTPUT_DIR = BASE / "output"
+
+DEMAND_DIR.mkdir(
+    parents=True,
+    exist_ok=True,
+)
+
+OUTPUT_DIR.mkdir(
+    parents=True,
+    exist_ok=True,
+)
+
+
+# ============================================================
+# CONSTANTS
+# ============================================================
+
+DEMAND_DURATION = 900
+SIM_END = 3600
+
+SEED = 42
+
+# Representative hypothetical intersection scale.
+REFERENCE_TOTAL = 1050
+
+# Directional shares derived from the TIRTL analysis.
+DIRECTION_SHARE = {
+    "N": 0.2061,
+    "S": 0.2034,
+    "E": 0.2934,
+    "W": 0.2971,
+}
+
+# Explicit hypothetical-intersection assumption.
+TURN_SHARE = {
+    "left": 0.20,
+    "straight": 0.70,
+    "right": 0.10,
+}
+
+# The four real TIRTL site-heading streams used as
+# temporal predictors for our four representative approaches.
+#
+# These are NOT being claimed to be one physical intersection.
+SOURCE_STREAMS = {
+    "N": (133, "N"),
+    "S": (126, "S"),
+    "E": (147, "E"),
+    "W": (195, "W"),
+}
+
+
+# ============================================================
+# TIRTL CLASS DEFINITIONS
+# ============================================================
+
+VEHICLE_CLASS_COLUMNS = [
+    "motorcycle",
+    "short_vehicle",
+    "short_vehicle_towing",
+    "rigid_truck_bus",
+    "heavy_articulated",
+]
+
+
+# SUMO simulation categories corresponding to the TIRTL
+# modeling groups used in the project.
+SUMO_VEHICLE_TYPES = {
+    "short_vehicle": "short",
+    "short_vehicle_towing": "towing",
+    "rigid_truck_bus": "rigid",
+    "heavy_articulated": "heavy",
+    "motorcycle": "motorcycle",
+}
+
+
+# ============================================================
+# HELPERS
+# ============================================================
+
+def exact_allocate(
+    total: int,
+    shares: dict[str, float],
+) -> dict[str, int]:
+    """
+    Integer allocation that always sums exactly to total.
+    Uses the largest-remainder method.
+    """
+
+    keys = list(shares)
+
+    raw = {
+        key: total * shares[key]
+        for key in keys
+    }
+
+    values = {
+        key: math.floor(raw[key])
+        for key in keys
+    }
+
+    remaining = total - sum(values.values())
+
+    order = sorted(
+        keys,
+        key=lambda key: (
+            raw[key] - values[key]
+        ),
+        reverse=True,
+    )
+
+    for key in order[:remaining]:
+        values[key] += 1
+
+    return values
+
+
+def find_previous_required_row(
+    df: pd.DataFrame,
+    site: int,
+    heading: str,
+    timestamp: pd.Timestamp,
+) -> pd.DataFrame:
+
+    subset = df[
+        (df["site"] == site)
+        & (df["heading"] == heading)
+        & (df["datetime"] == timestamp)
+    ]
+
+    return subset
+
+
+def make_model_input(
+    row: pd.Series,
+    model,
+) -> pd.DataFrame:
+    """
+    Recreate the exact feature representation used during
+    training.
+
+    Training:
+        numeric features
+        + site
+        + heading
+        -> pd.get_dummies(...)
+        -> float32
+
+    The saved XGBoost model contains feature_names_in_,
+    so we align to that exact schema.
+    """
+
+    numeric_features = [
+        "bicycle",
+        "error",
+        "heavy_articulated",
+        "motorcycle",
+        "rigid_truck_bus",
+        "short_vehicle",
+        "short_vehicle_towing",
+        "unknown",
+
+        "mean_speed",
+        "total_motorized",
+        "total_all",
+
+        "hour",
+        "minute",
+        "day_of_week",
+        "is_weekend",
+        "time_sin",
+        "time_cos",
+
+        "lag_1",
+        "lag_2",
+        "lag_4",
+        "lag_8",
+
+        "rolling_mean_4",
+        "rolling_std_4",
+        "rolling_mean_8",
+        "rolling_std_8",
+
+        "motorcycle_share",
+        "short_vehicle_share",
+        "short_vehicle_towing_share",
+        "rigid_truck_bus_share",
+        "heavy_articulated_share",
+    ]
+
+    categorical_features = [
+        "site",
+        "heading",
+    ]
+
+    values = {}
+
+    for column in numeric_features:
+        value = row[column]
+
+        if pd.isna(value) or not np.isfinite(float(value)):
+            value = 0.0
+
+        values[column] = float(value)
+
+    values["site"] = str(int(row["site"]))
+    values["heading"] = str(row["heading"])
+
+    x = pd.DataFrame(
+        [values]
+    )
+
+    x = pd.get_dummies(
+        x,
+        columns=categorical_features,
+        dtype=np.float32,
+    )
+
+    expected_features = list(
+        model.feature_names_in_
+    )
+
+    x = x.reindex(
+        columns=expected_features,
+        fill_value=0,
+    )
+
+    return x.astype(np.float32)
+
+
+def load_vehicle_composition(
+    hour: int,
+) -> dict[str, float]:
+    """
+    Read the hourly composition generated during the TIRTL
+    composition audit.
+    """
+
+    if not COMPOSITION_FILE.exists():
+        raise FileNotFoundError(
+            f"Missing composition file: {COMPOSITION_FILE}"
+        )
+
+    df = pd.read_csv(
+        COMPOSITION_FILE,
+        index_col=0,
+    )
+
+    if hour not in df.index:
+        # CSV indices may have been read as strings.
+        df.index = df.index.astype(int)
+
+    if hour not in df.index:
+        raise ValueError(
+            f"No vehicle composition for hour {hour}"
+        )
+
+    row = df.loc[hour]
+
+    composition = {}
+
+    for source_column, sumo_type in SUMO_VEHICLE_TYPES.items():
+
+        share_column = f"{source_column}_share"
+
+        if share_column not in row.index:
+            raise RuntimeError(
+                f"Missing {share_column} "
+                f"in {COMPOSITION_FILE}"
+            )
+
+        composition[sumo_type] = float(
+            row[share_column]
+        )
+
+    total = sum(composition.values())
+
+    if total <= 0:
+        raise RuntimeError(
+            "Vehicle composition sums to zero."
+        )
+
+    # Normalize to avoid tiny floating-point differences.
+    composition = {
+        key: value / total
+        for key, value in composition.items()
+    }
+
+    return composition
+
+
+def parse_tripinfo(
+    path: Path,
+) -> tuple[list[dict], list[dict]]:
+
+    if not path.exists():
+        raise RuntimeError(
+            f"SUMO did not create TripInfo: {path}"
+        )
+
+    root = ET.parse(path).getroot()
+
+    finished = []
+    unfinished = []
+
+    for element in root.findall("tripinfo"):
+
+        arrival = float(
+            element.attrib.get(
+                "arrival",
+                "-1",
+            )
+        )
+
+        duration = float(
+            element.attrib.get(
+                "duration",
+                "-1",
+            )
+        )
+
+        record = {
+            "id": element.attrib.get("id"),
+            "depart": float(
+                element.attrib.get(
+                    "depart",
+                    "nan",
+                )
+            ),
+            "arrival": arrival,
+            "duration": duration,
+            "waitingTime": float(
+                element.attrib.get(
+                    "waitingTime",
+                    "nan",
+                )
+            ),
+            "timeLoss": float(
+                element.attrib.get(
+                    "timeLoss",
+                    "nan",
+                )
+            ),
+            "routeLength": float(
+                element.attrib.get(
+                    "routeLength",
+                    "nan",
+                )
+            ),
+            "vtype": element.attrib.get(
+                "vtype",
+                "",
+            ),
+        }
+
+        if arrival >= 0 and duration >= 0:
+            finished.append(record)
+        else:
+            unfinished.append(record)
+
+    return finished, unfinished
+
+
+def calculate_metrics(
+    tripinfo: Path,
+) -> dict:
+
+    finished, unfinished = parse_tripinfo(
+        tripinfo
+    )
+
+    all_trips = finished + unfinished
+
+    durations = [
+        x["duration"]
+        for x in finished
+        if np.isfinite(x["duration"])
+    ]
+
+    waiting = [
+        x["waitingTime"]
+        for x in finished
+        if np.isfinite(x["waitingTime"])
+    ]
+
+    time_loss = [
+        x["timeLoss"]
+        for x in finished
+        if np.isfinite(x["timeLoss"])
+    ]
+
+    total = len(all_trips)
+    arrived = len(finished)
+
+    return {
+        "vehicles_reported": total,
+        "vehicles_arrived": arrived,
+        "vehicles_unfinished": len(unfinished),
+        "completion_rate_pct": (
+            arrived / total * 100
+            if total
+            else 0
+        ),
+        "mean_travel_time_s": (
+            float(np.mean(durations))
+            if durations
+            else 0
+        ),
+        "mean_waiting_time_s": (
+            float(np.mean(waiting))
+            if waiting
+            else 0
+        ),
+        "mean_time_loss_s": (
+            float(np.mean(time_loss))
+            if time_loss
+            else 0
+        ),
+    }
+
+
+# ============================================================
+# MODEL / DATA LOADING
+# ============================================================
+
+def validate_environment():
+
+    required = [
+        FEATURE_FILE,
+        MODEL_FILE,
+        COMPOSITION_FILE,
+        PROFILE_FILE,
+        SUMO_BIN,
+        NETWORK,
+    ]
+
+    missing = [
+        str(path)
+        for path in required
+        if not path.exists()
+    ]
+
+    if missing:
+        raise FileNotFoundError(
+            "Missing required files:\n"
+            + "\n".join(missing)
+        )
+
+
+def main():
+
+    parser = argparse.ArgumentParser(
+        description=(
+            "TrafficPulse dynamic "
+            "XGBoost → SUMO controller"
+        )
+    )
+
+    parser.add_argument(
+        "--date",
+        required=True,
+        help="YYYY-MM-DD",
+    )
+
+    parser.add_argument(
+        "--time",
+        required=True,
+        help="HH:MM, e.g. 17:00",
+    )
+
+    parser.add_argument(
+        "--gui",
+        action="store_true",
+        help="Open SUMO-GUI instead of headless SUMO.",
+    )
+
+    parser.add_argument(
+        "--no-run",
+        action="store_true",
+        help=(
+            "Generate the SUMO scenario but do not "
+            "launch SUMO."
+        ),
+    )
+
+    parser.add_argument(
+        "--tag",
+        default=None,
+        help=(
+            "Optional output name, "
+            "otherwise timestamp is used."
+        ),
+    )
+
+    args = parser.parse_args()
+
+    validate_environment()
+
+    try:
+        timestamp = pd.Timestamp(
+            f"{args.date} {args.time}"
+        )
+    except Exception as exc:
+        raise ValueError(
+            "Invalid --date/--time combination."
+        ) from exc
+
+    if timestamp.minute not in (0, 15, 30, 45):
+        raise ValueError(
+            "TIRTL timestamps must be 15-minute aligned."
+        )
+
+    print("=" * 80)
+    print("TRAFFICPULSE DYNAMIC PREDICTION")
+    print("=" * 80)
+
+    print(
+        f"Prediction timestamp: {timestamp}"
+    )
+    print(
+        "Target: next 15-minute "
+        "motorized demand"
+    )
+
+    # --------------------------------------------------------
+    # Load model
+    # --------------------------------------------------------
+
+    print("\nLoading XGBoost model...")
+
+    model = joblib.load(
+        MODEL_FILE
+    )
+
+    # Inference here is only four rows, so CPU inference is
+    # faster/simpler than transferring tiny inputs to CUDA.
+    model.set_params(device="cpu")
+
+    print(
+        f"Model features: "
+        f"{len(model.feature_names_in_)}"
+    )
+
+    # --------------------------------------------------------
+    # Load only the columns required for inference.
+    # --------------------------------------------------------
+
+    print("Loading TIRTL features...")
+
+    df = pd.read_csv(
+        FEATURE_FILE,
+        parse_dates=["datetime"],
+        low_memory=False,
+    )
+
+    df["site"] = pd.to_numeric(
+        df["site"],
+        errors="coerce",
+    )
+
+    df["heading"] = df["heading"].astype(str)
+
+    # --------------------------------------------------------
+    # Generate four directional predictions.
+    # --------------------------------------------------------
+
+    predictions = {}
+    source_details = {}
+
+    for direction, (
+        site,
+        heading,
+    ) in SOURCE_STREAMS.items():
+
+        rows = find_previous_required_row(
+            df,
+            site,
+            heading,
+            timestamp,
+        )
+
+        if len(rows) != 1:
+
+            raise RuntimeError(
+                f"Expected exactly one row for "
+                f"{direction}: "
+                f"site={site}, "
+                f"heading={heading}, "
+                f"time={timestamp}, "
+                f"found {len(rows)}"
+            )
+
+        row = rows.iloc[0]
+
+        x = make_model_input(
+            row,
+            model,
+        )
+
+        prediction = float(
+            model.predict(x)[0]
+        )
+
+        # Demand cannot physically be negative.
+        prediction = max(
+            0.0,
+            prediction,
+        )
+
+        predictions[direction] = prediction
+
+        source_details[direction] = {
+            "site": int(site),
+            "heading": heading,
+            "current_observed_total": float(
+                row["total_motorized"]
+            ),
+            "model_prediction": prediction,
+            "target_next_15min_actual_available_in_data": (
+                float(row["target_next_15min"])
+                if not pd.isna(
+                    row["target_next_15min"]
+                )
+                else None
+            ),
+        }
+
+    # --------------------------------------------------------
+    # Calibrate each real directional stream to the
+    # representative hypothetical intersection.
+    #
+    # We preserve each stream's temporal prediction but
+    # normalize its magnitude so the reference period gives
+    # our 1050-vehicle representative baseline.
+    # --------------------------------------------------------
+
+    # Correct demand calibration:
+    # TIRTL source streams are independent sensors, not the four
+    # arms of one physical intersection. Use them only to derive
+    # the short-term XGBoost multiplier, and use the representative
+    # TIRTL profile for the hypothetical intersection demand scale.
+    profile = pd.read_csv(PROFILE_FILE)
+    profile["hour"] = profile["hour"].astype(int)
+    profile["time_bin"] = profile["time_bin"].astype(str)
+
+    profile_row = profile[
+        (profile["hour"] == int(timestamp.hour))
+        & (profile["time_bin"] == str(args.time))
+    ]
+
+    if profile_row.empty:
+        raise ValueError(
+            f"No representative TIRTL profile row for "
+            f"hour={timestamp.hour}, time_bin={args.time}"
+        )
+
+    representative_current = float(
+        profile_row.iloc[0]["mean_demand"]
+    )
+
+    current_source_total = sum(
+        float(source_details[d]["current_observed_total"])
+        for d in SOURCE_STREAMS
+    )
+
+    predicted_source_total = sum(
+        float(source_details[d]["model_prediction"])
+        for d in SOURCE_STREAMS
+    )
+
+    if current_source_total <= 0:
+        raise ValueError(
+            "Current TIRTL source total is zero; "
+            "cannot calculate forecast multiplier."
+        )
+
+    forecast_multiplier = (
+        predicted_source_total / current_source_total
+    )
+
+    forecast_multiplier = max(
+        0.50,
+        min(1.50, forecast_multiplier)
+    )
+
+    dynamic_total = max(
+        1,
+        int(round(
+            representative_current * forecast_multiplier
+        ))
+    )
+
+    direction_integer = exact_allocate(
+        dynamic_total,
+        DIRECTION_SHARE
+    )
+
+    actual_sim_total = sum(direction_integer.values())
+
+    print()
+    print("Demand calibration:")
+    print(f"  Representative profile : {representative_current:.2f} veh/15min")
+    print(f"  Current source total   : {current_source_total:.2f}")
+    print(f"  Predicted source total : {predicted_source_total:.2f}")
+    print(f"  XGBoost multiplier     : {forecast_multiplier:.4f}")
+    print(f"  Dynamic intersection   : {dynamic_total} veh/15min")
+    print(f"  N/S/E/W                : {direction_integer}")
+    print(f"  Simulation total       : {actual_sim_total} veh/15min")
+
+    route_file = (
+        DEMAND_DIR
+        / f"{tag}.rou.xml"
+    )
+
+    config_file = (
+        BASE
+        / f"{tag}.sumocfg"
+    )
+
+    tripinfo_file = (
+        OUTPUT_DIR
+        / f"{tag}.tripinfo.xml"
+    )
+
+    results_file = (
+        OUTPUT_DIR
+        / f"{tag}.results.json"
+    )
+
+    route_file.write_text(
+        routes_xml
+    )
+
+    # --------------------------------------------------------
+    # SUMO configuration.
+    # --------------------------------------------------------
+
+    sumocfg = f"""<configuration>
+
+    <input>
+        <net-file value="../network/intersection.net.xml"/>
+        <route-files value="demand/{route_file.name}"/>
+    </input>
+
+    <time>
+        <begin value="0"/>
+        <end value="{SIM_END}"/>
+        <step-length value="1"/>
+    </time>
+
+    <processing>
+        <time-to-teleport value="300"/>
+    </processing>
+
+    <output>
+        <tripinfo-output value="output/{tripinfo_file.name}"/>
+        <tripinfo-output.write-unfinished value="true"/>
+    </output>
+
+    <random_number>
+        <seed value="{SEED}"/>
+    </random_number>
+
+</configuration>
+"""
+
+    config_file.write_text(
+        sumocfg
+    )
+
+    # --------------------------------------------------------
+    # Print scenario.
+    # --------------------------------------------------------
+
+    print()
+    print("=" * 80)
+    print("DYNAMIC DEMAND")
+    print("=" * 80)
+
+    print(
+        f"Observed timestamp:     "
+        f"{timestamp}"
+    )
+
+    print(
+        f"Predicted total before "
+        f"calibration:           "
+        f"{predicted_total:.2f}"
+    )
+
+    print(
+        f"Vehicles to SUMO:       "
+        f"{actual_sim_total}"
+    )
+
+    print()
+
+    for direction in (
+        "N",
+        "S",
+        "E",
+        "W",
+    ):
+
+        detail = source_details[direction]
+
+        print(
+            f"{direction}: "
+            f"site={detail['site']} "
+            f"{detail['heading']} | "
+            f"current="
+            f"{detail['current_observed_total']:.1f} | "
+            f"prediction="
+            f"{detail['model_prediction']:.1f} | "
+            f"source_forecast="
+            f"{detail['model_prediction']:.1f} | "
+            f"SUMO="
+            f"{direction_integer[direction]}"
+        )
+
+    print()
+    print("Vehicle composition:")
+
+    for vehicle_type, share in (
+        composition.items()
+    ):
+        print(
+            f"  {vehicle_type:<12}"
+            f"{share * 100:6.2f}%"
+        )
+
+    print()
+    print("Generated:")
+    print(
+        f"  Route:  {route_file}"
+    )
+    print(
+        f"  Config: {config_file}"
+    )
+
+    if args.no_run:
+        print()
+        print(
+            "Simulation not started "
+            "(--no-run)."
+        )
+        return
+
+    # --------------------------------------------------------
+    # Run SUMO.
+    # --------------------------------------------------------
+
+    executable = (
+        SUMO_GUI_BIN
+        if args.gui
+        else SUMO_BIN
+    )
+
+    if not executable.exists():
+        raise FileNotFoundError(
+            f"SUMO executable missing: {executable}"
+        )
+
+    if tripinfo_file.exists():
+        tripinfo_file.unlink()
+
+    env = os.environ.copy()
+
+    if args.gui:
+        env["LIBGL_ALWAYS_SOFTWARE"] = "1"
+
+    command = [
+        str(executable),
+        "-c",
+        str(config_file.resolve()),
+    ]
+
+    print()
+    print("=" * 80)
+
+    if args.gui:
+        print("STARTING SUMO-GUI")
+    else:
+        print("STARTING HEADLESS SUMO")
+
+    print("=" * 80)
+
+    print(
+        " ".join(command)
+    )
+
+    subprocess.run(
+        command,
+        check=True,
+        env=env,
+    )
+
+    # --------------------------------------------------------
+    # Metrics.
+    # --------------------------------------------------------
+
+    metrics = calculate_metrics(
+        tripinfo_file
+    )
+
+    result = {
+        "timestamp": str(timestamp),
+
+        "model": "XGBoost",
+
+        "reference_total": REFERENCE_TOTAL,
+
+        "predicted_total_before_calibration": (
+            predicted_total
+        ),
+
+        "simulated_total": (
+            actual_sim_total
+        ),
+
+        "direction_integer": (
+            direction_integer
+        ),
+
+        "direction_calibrated": (
+            calibrated
+        ),
+
+        "source_streams": (
+            source_details
+        ),
+
+        "vehicle_composition": (
+            composition
+        ),
+
+        "turn_share": (
+            TURN_SHARE
+        ),
+
+        "metrics": metrics,
+
+        "route_file": str(
+            route_file
+        ),
+
+        "config_file": str(
+            config_file
+        ),
+
+        "tripinfo_file": str(
+            tripinfo_file
+        ),
+    }
+
+    results_file.write_text(
+        json.dumps(
+            result,
+            indent=2,
+        )
+    )
+
+    print()
+    print("=" * 80)
+    print("DYNAMIC TRAFFICPULSE RESULTS")
+    print("=" * 80)
+
+    for key, value in metrics.items():
+        print(
+            f"{key:<30} {value}"
+        )
+
+    print()
+    print(
+        f"Results: {results_file}"
+    )
+
+
+if __name__ == "__main__":
+    main()

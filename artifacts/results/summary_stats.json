@@ -1,0 +1,57 @@
+{
+  "ml_test": {
+    "Persistence": {
+      "MAE": 53.34262466430664,
+      "RMSE": 83.08253438317377,
+      "R2": 0.9728953838348388
+    },
+    "Random Forest": {
+      "MAE": 42.64829385787168,
+      "RMSE": 66.89223078894995,
+      "R2": 0.9824298765371058
+    },
+    "XGBoost": {
+      "MAE": 38.91121292114258,
+      "RMSE": 61.60672388412141,
+      "R2": 0.98509681224823
+    }
+  },
+  "end_to_end": {
+    "source_stream_mae": 42.28750000000008,
+    "source_stream_rmse": 70.58178819638964,
+    "mean_source_pct_error": 0.9005448004468127,
+    "representative_demand_mae": 8.024260109058773,
+    "representative_demand_rmse": 14.161117122154993,
+    "mean_representative_pct_error": 0.861262421553648
+  },
+  "volume_demand_queue_pearson_r": 0.9909805611339896,
+  "volume_demand_travel_pearson_r": 0.7612235806308922,
+  "capacity_travel_reduction_s": {
+    "mean": 67.92296840481596,
+    "min": 35.48629441624368,
+    "max": 117.0393343419062
+  },
+  "capacity_mean_queue_reduction_veh": {
+    "mean": 7.377187500000002,
+    "min": 3.031944444444445,
+    "max": 13.368611111111111
+  },
+  "heavy_composition_effect_mean": {
+    "travel_time_s": 5.959568402941024,
+    "waiting_time_s": 5.1203528509983975,
+    "mean_queue_veh": 0.9340624999999991
+  },
+  "n_runs": {
+    "volume": 40,
+    "composition": 16,
+    "capacity": 16,
+    "total": 72
+  },
+  "all_runs_completed_100pct": true,
+  "xgboost_test_mae": 38.91121292114258,
+  "xgboost_test_r2": 0.98509681224823,
+  "mean_source_pct_error": 0.9005448004468127,
+  "demand_queue_pearson_r": 0.9909805611339896,
+  "mean_two_lane_travel_reduction_s": 67.92296840481596,
+  "mean_heavy_travel_delta_s": 5.959568402941024
+}

@@ -1,0 +1,53 @@
+<viewsettings>
+    <!-- TrafficPulse dark-tech preset (valid SUMO viewsettings format).
+         Load: sumo-gui -g trafficpulse.view.xml  OR  View Settings > Open.
+         Then, if needed, set Streets > uniform and Vehicles > given vehicle/type/route color. -->
+    <scheme name="TrafficPulseDark">
+        <opengl dither="0"/>
+        <background backgroundColor="7,19,31" showGrid="0" gridXSize="100.00" gridYSize="100.00"/>
+        <edges laneEdgeMode="0" scaleMode="0" laneShowBorders="0" showBikeMarkings="0" showLinkDecals="0" showLinkRules="0" showRails="0" hideConnectors="1" widthExaggeration="2.50" minSize="0.00" showDirection="0" showSublanes="0" spreadSuperposed="0"
+                edgeName_show="0" edgeName_size="50.00" edgeName_color="orange" edgeName_constantSize="1"
+                internalEdgeName_show="0" internalEdgeName_size="40.00" internalEdgeName_color="128,64,0" internalEdgeName_constantSize="1"
+                cwaEdgeName_show="0" cwaEdgeName_size="50.00" cwaEdgeName_color="magenta" cwaEdgeName_constantSize="1"
+                streetName_show="0" streetName_size="55.00" streetName_color="yellow" streetName_constantSize="1">
+            <colorScheme name="uniform">
+                <entry color="82,106,123" name="road"/>
+                <entry color="82,106,123" name="sidewalk"/>
+                <entry color="82,106,123" name="bike lane"/>
+                <entry color="7,19,31" name="green verge"/>
+                <entry color="7,19,31" name="waterway"/>
+                <entry color="82,106,123" name="no passenger"/>
+                <entry color="82,106,123" name="closed"/>
+                <entry color="82,106,123" name="connector"/>
+            </colorScheme>
+            <scalingScheme name="uniform">
+                <entry color="1.00"/>
+            </scalingScheme>
+        </edges>
+        <vehicles vehicleMode="0" vehicleQuality="2" vehicle_minSize="3.00" vehicle_exaggeration="3.00" vehicle_constantSize="0" showBlinker="0"
+                  vehicleName_show="0" vehicleName_size="50.00" vehicleName_color="204,153,0" vehicleName_constantSize="1">
+            <colorScheme name="given vehicle/type/route color">
+                <entry color="8,185,242"/>
+            </colorScheme>
+            <colorScheme name="uniform">
+                <entry color="8,185,242"/>
+            </colorScheme>
+        </vehicles>
+        <junctions junctionMode="0"
+                   drawLinkTLIndex_show="0" drawLinkTLIndex_size="50.00" drawLinkTLIndex_color="128,128,255" drawLinkTLIndex_constantSize="1"
+                   drawLinkJunctionIndex_show="0" drawLinkJunctionIndex_size="50.00" drawLinkJunctionIndex_color="128,128,255" drawLinkJunctionIndex_constantSize="1"
+                   junctionName_show="0" junctionName_size="50.00" junctionName_color="0,255,128" junctionName_constantSize="1"
+                   internalJunctionName_show="0" internalJunctionName_size="50.00" internalJunctionName_color="0,204,128" internalJunctionName_constantSize="1"
+                   showLane2Lane="0" drawShape="1" drawCrossingsAndWalkingareas="0" junction_minSize="1.00" junction_exaggeration="1.50" junction_constantSize="0">
+            <colorScheme name="uniform">
+                <entry color="53,74,91"/>
+            </colorScheme>
+        </junctions>
+        <additionals addMode="0" add_minSize="1.00" add_exaggeration="1.00" add_constantSize="0" addName_show="0" addName_size="50.00" addName_color="255,0,128" addName_constantSize="1" addFullName_show="0" addFullName_size="50.00" addFullName_color="255,0,128" addFullName_constantSize="1"/>
+        <pois poi_minSize="0.00" poi_exaggeration="1.00" poi_constantSize="0" poiName_show="0" poiName_size="50.00" poiName_color="255,0,128" poiName_constantSize="1" poiType_show="0" poiType_size="50.00" poiType_color="255,0,128" poiType_constantSize="1"/>
+        <legend showSizeLegend="1"/>
+    </scheme>
+    <delay value="100.00"/>
+    <!-- No <viewport> here on purpose: SUMO auto-fits the network on load.
+         (A hardcoded viewport was pointing the camera at empty space.) -->
+</viewsettings>

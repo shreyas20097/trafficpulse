@@ -1,0 +1,118 @@
+<routes>
+
+    <vType
+        id="short"
+        accel="2.6"
+        decel="4.5"
+        sigma="0.5"
+        length="4.5"
+        minGap="2.5"
+        maxSpeed="13.89"
+        guiShape="passenger"
+    />
+
+    <vType
+        id="towing"
+        accel="2.2"
+        decel="4.5"
+        sigma="0.5"
+        length="7.0"
+        minGap="3.0"
+        maxSpeed="13.89"
+        guiShape="passenger"
+    />
+
+    <vType
+        id="rigid"
+        accel="1.8"
+        decel="4.0"
+        sigma="0.5"
+        length="10.0"
+        minGap="3.0"
+        maxSpeed="13.89"
+        guiShape="truck"
+    />
+
+    <vType
+        id="heavy"
+        accel="1.4"
+        decel="3.5"
+        sigma="0.5"
+        length="18.0"
+        minGap="4.0"
+        maxSpeed="13.89"
+        guiShape="truck"
+    />
+
+    <vType
+        id="motorcycle"
+        accel="3.0"
+        decel="5.0"
+        sigma="0.5"
+        length="2.2"
+        minGap="1.5"
+        maxSpeed="13.89"
+        guiShape="motorcycle"
+    />
+
+    <route id="N_left" edges="N_C C_E" />
+    <route id="N_straight" edges="N_C C_S" />
+    <route id="N_right" edges="N_C C_W" />
+    <route id="S_left" edges="S_C C_W" />
+    <route id="S_straight" edges="S_C C_N" />
+    <route id="S_right" edges="S_C C_E" />
+    <route id="E_left" edges="E_C C_N" />
+    <route id="E_straight" edges="E_C C_W" />
+    <route id="E_right" edges="E_C C_S" />
+    <route id="W_left" edges="W_C C_S" />
+    <route id="W_straight" edges="W_C C_E" />
+    <route id="W_right" edges="W_C C_N" />
+    <flow id="f_0" type="short" route="N_left" begin="0" end="900" number="33" departLane="best" departSpeed="max" />
+    <flow id="f_1" type="towing" route="N_left" begin="0" end="900" number="1" departLane="best" departSpeed="max" />
+    <flow id="f_2" type="rigid" route="N_left" begin="0" end="900" number="7" departLane="best" departSpeed="max" />
+    <flow id="f_3" type="heavy" route="N_left" begin="0" end="900" number="2" departLane="best" departSpeed="max" />
+    <flow id="f_4" type="short" route="N_straight" begin="0" end="900" number="116" departLane="best" departSpeed="max" />
+    <flow id="f_5" type="towing" route="N_straight" begin="0" end="900" number="2" departLane="best" departSpeed="max" />
+    <flow id="f_6" type="rigid" route="N_straight" begin="0" end="900" number="25" departLane="best" departSpeed="max" />
+    <flow id="f_7" type="heavy" route="N_straight" begin="0" end="900" number="7" departLane="best" departSpeed="max" />
+    <flow id="f_8" type="motorcycle" route="N_straight" begin="0" end="900" number="1" departLane="best" departSpeed="max" />
+    <flow id="f_9" type="short" route="N_right" begin="0" end="900" number="17" departLane="best" departSpeed="max" />
+    <flow id="f_10" type="rigid" route="N_right" begin="0" end="900" number="4" departLane="best" departSpeed="max" />
+    <flow id="f_11" type="heavy" route="N_right" begin="0" end="900" number="1" departLane="best" departSpeed="max" />
+    <flow id="f_12" type="short" route="S_left" begin="0" end="900" number="33" departLane="best" departSpeed="max" />
+    <flow id="f_13" type="towing" route="S_left" begin="0" end="900" number="1" departLane="best" departSpeed="max" />
+    <flow id="f_14" type="rigid" route="S_left" begin="0" end="900" number="7" departLane="best" departSpeed="max" />
+    <flow id="f_15" type="heavy" route="S_left" begin="0" end="900" number="2" departLane="best" departSpeed="max" />
+    <flow id="f_16" type="short" route="S_straight" begin="0" end="900" number="115" departLane="best" departSpeed="max" />
+    <flow id="f_17" type="towing" route="S_straight" begin="0" end="900" number="2" departLane="best" departSpeed="max" />
+    <flow id="f_18" type="rigid" route="S_straight" begin="0" end="900" number="25" departLane="best" departSpeed="max" />
+    <flow id="f_19" type="heavy" route="S_straight" begin="0" end="900" number="7" departLane="best" departSpeed="max" />
+    <flow id="f_20" type="motorcycle" route="S_straight" begin="0" end="900" number="1" departLane="best" departSpeed="max" />
+    <flow id="f_21" type="short" route="S_right" begin="0" end="900" number="16" departLane="best" departSpeed="max" />
+    <flow id="f_22" type="rigid" route="S_right" begin="0" end="900" number="4" departLane="best" departSpeed="max" />
+    <flow id="f_23" type="heavy" route="S_right" begin="0" end="900" number="1" departLane="best" departSpeed="max" />
+    <flow id="f_24" type="short" route="E_left" begin="0" end="900" number="48" departLane="best" departSpeed="max" />
+    <flow id="f_25" type="towing" route="E_left" begin="0" end="900" number="1" departLane="best" departSpeed="max" />
+    <flow id="f_26" type="rigid" route="E_left" begin="0" end="900" number="10" departLane="best" departSpeed="max" />
+    <flow id="f_27" type="heavy" route="E_left" begin="0" end="900" number="3" departLane="best" departSpeed="max" />
+    <flow id="f_28" type="short" route="E_straight" begin="0" end="900" number="165" departLane="best" departSpeed="max" />
+    <flow id="f_29" type="towing" route="E_straight" begin="0" end="900" number="3" departLane="best" departSpeed="max" />
+    <flow id="f_30" type="rigid" route="E_straight" begin="0" end="900" number="36" departLane="best" departSpeed="max" />
+    <flow id="f_31" type="heavy" route="E_straight" begin="0" end="900" number="10" departLane="best" departSpeed="max" />
+    <flow id="f_32" type="motorcycle" route="E_straight" begin="0" end="900" number="1" departLane="best" departSpeed="max" />
+    <flow id="f_33" type="short" route="E_right" begin="0" end="900" number="24" departLane="best" departSpeed="max" />
+    <flow id="f_34" type="rigid" route="E_right" begin="0" end="900" number="5" departLane="best" departSpeed="max" />
+    <flow id="f_35" type="heavy" route="E_right" begin="0" end="900" number="2" departLane="best" departSpeed="max" />
+    <flow id="f_36" type="short" route="W_left" begin="0" end="900" number="48" departLane="best" departSpeed="max" />
+    <flow id="f_37" type="towing" route="W_left" begin="0" end="900" number="1" departLane="best" departSpeed="max" />
+    <flow id="f_38" type="rigid" route="W_left" begin="0" end="900" number="11" departLane="best" departSpeed="max" />
+    <flow id="f_39" type="heavy" route="W_left" begin="0" end="900" number="3" departLane="best" departSpeed="max" />
+    <flow id="f_40" type="short" route="W_straight" begin="0" end="900" number="167" departLane="best" departSpeed="max" />
+    <flow id="f_41" type="towing" route="W_straight" begin="0" end="900" number="3" departLane="best" departSpeed="max" />
+    <flow id="f_42" type="rigid" route="W_straight" begin="0" end="900" number="36" departLane="best" departSpeed="max" />
+    <flow id="f_43" type="heavy" route="W_straight" begin="0" end="900" number="11" departLane="best" departSpeed="max" />
+    <flow id="f_44" type="motorcycle" route="W_straight" begin="0" end="900" number="1" departLane="best" departSpeed="max" />
+    <flow id="f_45" type="short" route="W_right" begin="0" end="900" number="24" departLane="best" departSpeed="max" />
+    <flow id="f_46" type="rigid" route="W_right" begin="0" end="900" number="5" departLane="best" departSpeed="max" />
+    <flow id="f_47" type="heavy" route="W_right" begin="0" end="900" number="2" departLane="best" departSpeed="max" />
+</routes>

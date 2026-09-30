@@ -1,0 +1,21 @@
+<configuration>
+    <input>
+        <net-file value="/home/omarchy/Projects/de/sumo/trafficpulse/capacity/network/intersection_2lane.net.xml"/>
+        <route-files value="/home/omarchy/Projects/de/sumo/trafficpulse/capacity/demand/cap_20260117_0630_2lane.rou.xml"/>
+    </input>
+    <time>
+        <begin value="0"/>
+        <end value="3600"/>
+        <step-length value="1"/>
+    </time>
+    <processing>
+        <time-to-teleport value="300"/>
+    </processing>
+    <output>
+        <tripinfo-output value="/home/omarchy/Projects/de/sumo/trafficpulse/capacity/output/cap_20260117_0630_2lane.tripinfo.xml"/>
+        <tripinfo-output.write-unfinished value="true"/>
+    </output>
+    <random_number>
+        <seed value="42"/>
+    </random_number>
+</configuration>
