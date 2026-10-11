@@ -4,6 +4,34 @@ Predictive traffic-demand modeling + microscopic simulation for a representative
 
 Pipeline: **TIRTL observations → XGBoost short-term demand forecast → SUMO simulation (72 experiments) → frozen-results Streamlit dashboard.**
 
+## Clone (requires Git LFS)
+
+`*.csv` and `*.joblib` (~3 GB) are stored with Git LFS. Install it
+**once per machine before cloning**, or you will get 1 KB pointer stubs
+instead of data (and `pandas`/`joblib` will fail to load them):
+
+```bash
+sudo pacman -S git-lfs   # or: sudo apt install git-lfs / brew install git-lfs
+git lfs install          # once per machine
+git clone https://github.com/shreyas20097/trafficpulse.git
+```
+
+(Debian/Ubuntu need `git lfs install` after the apt install too;
+GitHub Desktop already bundles LFS.)
+
+Lightweight clone — skip the 1.2 GB random forest + 1.6 GB raw CSVs
+if you only need the dashboard:
+
+```bash
+GIT_LFS_SKIP_SMUDGE=1 git clone https://github.com/shreyas20097/trafficpulse.git
+cd trafficpulse
+git lfs pull -I "artifacts/tirtl_training/xgboost.joblib,artifacts/results/*,artifacts/figures/*"
+```
+
+Note for the repo owner: LFS downloads count against the owner's
+bandwidth quota (10 GiB/month on the Free plan ≈ 3 full clones),
+so prefer the lightweight pattern when sharing.
+
 ## Quickstart
 
 ```bash
