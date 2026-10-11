@@ -1,11 +1,13 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-PROJECT="$(pwd)"
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+PROJECT="$(cd "$SCRIPT_DIR/.." && pwd)"
+cd "$PROJECT"
 
 if [[ ! -d "$PROJECT/.sumo-venv" ]]; then
-    echo "ERROR: .sumo-venv not found."
-    echo "Run this from /home/omarchy/Projects/de"
+    echo "ERROR: .sumo-venv not found at $PROJECT/.sumo-venv."
+    echo "Run scripts/fix_trafficpulse_sumo.sh from anywhere; it resolves the repo root itself."
     exit 1
 fi
 
@@ -15,7 +17,7 @@ mkdir -p sumo/trafficpulse/{network,demand,output}
 # build_trafficpulse_sumo.py
 # ============================================================
 
-cat > build_trafficpulse_sumo.py <<'PY'
+cat > "$PROJECT/build_trafficpulse_sumo.py" <<'PY'
 from pathlib import Path
 import subprocess
 import sys
@@ -25,7 +27,8 @@ import sys
 # Paths
 # ============================================================
 
-BASE = Path("sumo/trafficpulse").resolve()
+PROJECT = Path(__file__).resolve().parent
+BASE = PROJECT / "sumo/trafficpulse"
 
 NETWORK = BASE / "network"
 DEMAND = BASE / "demand"
@@ -631,7 +634,7 @@ PY
 # run_trafficpulse.py
 # ============================================================
 
-cat > run_trafficpulse.py <<'PY'
+cat > "$PROJECT/run_trafficpulse.py" <<'PY'
 from pathlib import Path
 import json
 import statistics
@@ -644,7 +647,8 @@ import libsumo
 # Paths
 # ============================================================
 
-BASE = Path("sumo/trafficpulse").resolve()
+PROJECT = Path(__file__).resolve().parent
+BASE = PROJECT / "sumo/trafficpulse"
 
 CFG = BASE / "trafficpulse_baseline.sumocfg"
 

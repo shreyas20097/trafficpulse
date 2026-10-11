@@ -1,7 +1,8 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-PROJECT="/home/omarchy/Projects/de"
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+PROJECT="$(cd "$SCRIPT_DIR/.." && pwd)"
 SCRIPT="$PROJECT/trafficpulse_dynamic.py"
 
 cd "$PROJECT"
@@ -18,7 +19,9 @@ fi
 # ------------------------------------------------------------
 # Backup
 # ------------------------------------------------------------
-BACKUP="$SCRIPT.bak.$(date +%Y%m%d_%H%M%S)"
+BACKUP_DIR="$PROJECT/archive/trafficpulse_dynamic_history"
+mkdir -p "$BACKUP_DIR"
+BACKUP="$BACKUP_DIR/trafficpulse_dynamic.py.bak.$(date +%Y%m%d_%H%M%S)"
 cp -- "$SCRIPT" "$BACKUP"
 echo "Backup created:"
 echo "  $BACKUP"

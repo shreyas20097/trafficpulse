@@ -3,6 +3,7 @@ import time
 import json
 import warnings
 
+import joblib
 import numpy as np
 import pandas as pd
 
@@ -18,8 +19,9 @@ warnings.filterwarnings("ignore")
 # CONFIG
 # ============================================================
 
-DATA = Path("artifacts/tirtl_features.csv")
-OUT = Path("artifacts/tirtl_training")
+PROJECT = Path(__file__).resolve().parent
+DATA = PROJECT / "artifacts/tirtl_features.csv"
+OUT = PROJECT / "artifacts/tirtl_training"
 OUT.mkdir(parents=True, exist_ok=True)
 
 RANDOM_STATE = 42
@@ -387,8 +389,6 @@ print_metrics(
 print(f"Training time: {rf_time / 60:.2f} minutes")
 
 # Save model
-import joblib
-
 joblib.dump(
     rf,
     OUT / "random_forest.joblib"

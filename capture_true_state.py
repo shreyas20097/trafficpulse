@@ -63,7 +63,6 @@ QUEUE_WINDOW_S = 900
 def vtype_colors(cfg: Path) -> dict[str, str]:
     """Read the sim's own vType color attributes from its route file."""
     root = ET.parse(str(cfg)).getroot()
-    ns = {"s": "http://www.w3.org/2001/XMLSchema-instance"}
     colors: dict[str, str] = {}
     for inp in root.iter("route-files"):
         pass

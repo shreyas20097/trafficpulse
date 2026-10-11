@@ -25,7 +25,7 @@ from pathlib import Path
 import pandas as pd
 
 
-PROJECT = Path("/home/omarchy/Projects/de")
+PROJECT = Path(__file__).resolve().parent
 DYNAMIC_SCRIPT = PROJECT / "trafficpulse_dynamic.py"
 PYTHON = PROJECT / ".venv/bin/python"
 

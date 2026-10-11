@@ -39,7 +39,6 @@ import csv
 import json
 import math
 import statistics
-import sys
 import xml.etree.ElementTree as ET
 from pathlib import Path
 

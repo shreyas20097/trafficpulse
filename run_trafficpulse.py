@@ -10,7 +10,8 @@ import libsumo
 # Paths
 # ============================================================
 
-BASE = Path("sumo/trafficpulse").resolve()
+PROJECT = Path(__file__).resolve().parent
+BASE = PROJECT / "sumo/trafficpulse"
 
 CFG = BASE / "trafficpulse_baseline.sumocfg"
 
@@ -194,12 +195,6 @@ def main():
         t["timeLoss"]
         for t in finished
         if t["timeLoss"] >= 0
-    ]
-
-    all_valid_waiting = [
-        t["waitingTime"]
-        for t in trips
-        if t["waitingTime"] >= 0
     ]
 
     mean_travel_time = (

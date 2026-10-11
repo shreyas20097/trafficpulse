@@ -5,7 +5,6 @@ import json
 import math
 import os
 import subprocess
-import sys
 import xml.etree.ElementTree as ET
 from pathlib import Path
 
@@ -18,7 +17,7 @@ import pandas as pd
 # PROJECT PATHS
 # ============================================================
 
-PROJECT = Path.cwd()
+PROJECT = Path(__file__).resolve().parent
 
 FEATURE_FILE = PROJECT / "artifacts/tirtl_features.csv"
 MODEL_FILE = (

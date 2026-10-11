@@ -1,13 +1,13 @@
 from pathlib import Path
 import subprocess
-import sys
 
 
 # ============================================================
 # Paths
 # ============================================================
 
-BASE = Path("sumo/trafficpulse").resolve()
+PROJECT = Path(__file__).resolve().parent
+BASE = PROJECT / "sumo/trafficpulse"
 
 NETWORK = BASE / "network"
 DEMAND = BASE / "demand"

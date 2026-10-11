@@ -2,8 +2,15 @@ from pathlib import Path
 import pandas as pd
 import numpy as np
 
-ROOT = Path("tirtl_15min_volume_classification_january_2026")
-OUT = Path("artifacts")
+PROJECT = Path(__file__).resolve().parent
+# Raw TIRTL CSVs live in data/raw_tirtl_jan2026/ (moved from legacy
+# tirtl_15min_volume_classification_january_2026/; old name kept as fallback).
+_CANDIDATES = [
+    PROJECT / "data" / "raw_tirtl_jan2026",
+    PROJECT / "tirtl_15min_volume_classification_january_2026",
+]
+ROOT = next((p for p in _CANDIDATES if p.exists()), _CANDIDATES[0])
+OUT = PROJECT / "artifacts"
 OUT.mkdir(exist_ok=True)
 
 RAW_OUT = OUT / "tirtl_traffic_15min.csv"

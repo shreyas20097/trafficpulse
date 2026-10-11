@@ -332,7 +332,7 @@ plt.close(fig)
 
 print("Results synthesis complete:")
 print(f"  master_experiments.csv : {len(master)} runs")
-print(f"  tables 1-4 + summary_stats.json")
+print("  tables 1-4 + summary_stats.json")
 print(f"  figures: {sorted(p.name for p in FIG_DIR.glob('*.png'))}")
 print(f"  demand-queue r = {summary['volume_demand_queue_pearson_r']:.3f}")
 print(f"  demand-travel r = {summary['volume_demand_travel_pearson_r']:.3f}")
